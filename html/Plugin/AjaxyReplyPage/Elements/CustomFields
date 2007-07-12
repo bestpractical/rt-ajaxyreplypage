@@ -1,0 +1,41 @@
+<table>
+% my $i = 0;
+% my $cfcount = $CustomFields->Count;
+%  $cfcount++ if ($cfcount % 2) ; # if we have an odd number of 
+% #custom fields, fudge it so we know where to put in the table break
+% while (my $CustomField = $CustomFields->Next()) {
+% $i++;
+  <tr id="CF-<%$CustomField->id%>-EditRow">
+    <td class="labeltop">
+      <b><%$CustomField->Name%></b><br />
+      <i><%$CustomField->FriendlyType%></i>
+    </td>
+    <td class="entry"><& /Elements/EditCustomField, 
+        Object => $TicketObj, 
+        CustomField => $CustomField, 
+        NamePrefix => $NamePrefix ,
+        Default => $m->notes('Field-' . $CustomField->Id),
+        ($CustomField->SingleValue && $CustomField->IsSelectionType) ? (Rows => 1) : (),
+        &>
+%  if (my $msg = $m->notes('InvalidField-' . $CustomField->Id)) {
+        <br />
+        <em style="color: red"><% $msg %></em></td>
+%  }
+  </tr>
+% }
+</table>
+<%args>
+$QueueId => undef
+$TicketId => undef
+</%args>
+<%INIT>
+
+my $TicketObj=LoadTicket($TicketId);
+my $QueueObj = RT::Queue->new($session{'CurrentUser'});
+$QueueObj->Load($QueueId);
+
+my $NamePrefix = "Object-RT::Ticket-".$TicketObj->Id."-CustomField-";
+
+my $CustomFields = $QueueObj->TicketCustomFields();
+
+</%INIT>

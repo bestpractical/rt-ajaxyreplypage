@@ -1,0 +1,6 @@
+<%args>
+$TicketObj
+</%args>
+<span id="customfields">
+<& CustomFields, TicketId => $TicketObj->id, QueueId => ($ARGS{'Queue'}|| $TicketObj->QueueObj->id) &>
+</div>

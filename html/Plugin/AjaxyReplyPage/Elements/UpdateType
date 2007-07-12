@@ -1,0 +1,35 @@
+<tr>
+<td><&|/l&>Update Type</&>:</td>
+<td>
+% if ($CanComment) {
+<input type=radio id="CommentUpdate" name="UpdateType" onClick="document.getElementById('replybox').style.background = '#eeeeee';" value="private" <%$ARGS{'UpdateType'} eq "private" ? "CHECKED" : !$ARGS{'UpdateType'}&&$CommentDefault%>><label for="CommentUpdate"><&|/l&>Comments (Not sent to requestors)</&></label><br/>
+% }
+% if ($CanRespond) {
+<input onClick="document.getElementById('replybox').style.background = '#fcc';" type=radio id="ReplyUpdate" name="UpdateType" value="response" <%$ARGS{'UpdateType'} eq "response" ? "CHECKED" : !$ARGS{'UpdateType'}&&$ResponseDefault%>><label for="ReplyUpdate"><&|/l&>Reply to requestors</&></label><br/>
+% }
+</td>
+<%init>
+# Things needed in the template - we'll do the processing here, just
+# for the convenience:
+
+my ($CommentDefault, $ResponseDefault);
+if ($Action ne 'Respond') {
+   $CommentDefault = "CHECKED"; 
+} else {
+    $ResponseDefault = "CHECKED";
+}
+
+
+my $CanRespond = 0;
+my $CanComment = 0;
+$CanRespond = 1 if ( $TicketObj->CurrentUserHasRight('ReplyToTicket') or
+                     $TicketObj->CurrentUserHasRight('ModifyTicket') ); 
+
+$CanComment = 1 if ( $TicketObj->CurrentUserHasRight('CommentOnTicket') or
+                     $TicketObj->CurrentUserHasRight('ModifyTicket') ); 
+
+</%init>
+<%args>
+$TicketObj
+$Action
+</%args>

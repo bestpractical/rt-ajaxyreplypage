@@ -1,0 +1,70 @@
+<%ARGS>
+$TicketObj
+</%ARGS>
+<%init>
+my $arg = 'Ticket-'.$TicketObj->Id.'-SquelchMailTo';
+my @squelchto = ref($ARGS{$arg}) eq 'ARRAY' ? @{$ARGS{$arg}} : ($ARGS{$arg});
+
+foreach my $address (@squelchto) {
+        $TicketObj->SquelchMailTo($address) if ($address);
+}
+
+
+$arg = 'Ticket-'.$TicketObj->Id.'-UnsquelchMailTo';
+my @unsquelchto = ref($ARGS{$arg}) eq 'ARRAY' ? @{$ARGS{$arg}} : ($ARGS{$arg});
+
+foreach my $address (@unsquelchto) {
+        $TicketObj->UnsquelchMailTo($address) if ($address);
+}
+
+
+my $action;
+
+if (( $ARGS{'UpdateType'} eq 'response' ) || ($ARGS{'Action'} eq 'Respond' )) {
+    $action = 'Correspond';
+}
+else {
+    $action = 'Comment';
+}
+
+my $Message = MakeMIMEEntity(
+    Subject => $ARGS{'UpdateSubject'},
+    Body    => $ARGS{'UpdateContent'},
+);
+
+my ( $Transaction, $Description, $Object ) = $TicketObj->$action(
+    CcMessageTo  => $ARGS{'UpdateCc'},
+    BccMessageTo => $ARGS{'UpdateBcc'},
+    MIMEObj      => $Message,
+    TimeTaken    => $ARGS{'UpdateTimeWorked'},
+    DryRun       => 1
+);
+unless ( $Transaction ) {
+    $RT::Logger->error("Coulfn't fire '$action' action: $Description");
+}
+
+
+my @non_recipients = $TicketObj->SquelchMailTo;
+</%init>
+<tr>
+<td>Recipients</td>
+<td>
+<ul>
+% if ( $Object ) {
+<i><&|/l&>(Check boxes to disable notifications to the listed recipients)</&></i><br />
+% foreach my $scrip (@{$Object->Scrips->Prepared}) {
+% next unless $scrip->ActionObj->Action->isa('RT::Action::SendEmail');
+%foreach my $type qw(To Cc Bcc) {
+%my @addresses =  $scrip->ActionObj->Action->$type();
+%foreach my $addr (@addresses) {
+<li><input type="checkbox" class="checkbox" name="Ticket-<%$TicketObj->id%>-SquelchMailTo" value="<%$addr->address%>" /> <%$addr->address%></li>
+% }
+% }
+% }
+% }
+% foreach my $recipient (@non_recipients) {
+<li><input type="checkbox" class="checkbox" name="Ticket-<%$TicketObj->id%>-SquelchMailTo" value="<%$recipient->Content%>" checked />
+<% $recipient->Content %>
+% }
+</ul>
+</td>
