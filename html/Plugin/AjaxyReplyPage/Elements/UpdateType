@@ -2,10 +2,10 @@
 <td><&|/l&>Update Type</&>:</td>
 <td>
 % if ($CanComment) {
-<input type=radio id="CommentUpdate" name="UpdateType" onClick="document.getElementById('replybox').style.background = '#eeeeee';" value="private" <%$ARGS{'UpdateType'} eq "private" ? "CHECKED" : !$ARGS{'UpdateType'}&&$CommentDefault%>><label for="CommentUpdate"><&|/l&>Comments (Not sent to requestors)</&></label><br/>
+<input type=radio id="CommentUpdate" name="UpdateType" onClick="document.getElementById('replybox').style.background = '#eeeeee'; ahah('/Plugin/AjaxyReplyPage/ShowRecipients?TicketId=<%$TicketObj->id%>&UpdateType=private', 'recipients');" value="private" <%$ARGS{'UpdateType'} eq "private" ? "CHECKED" : !$ARGS{'UpdateType'}&&$CommentDefault%>><label for="CommentUpdate"><&|/l&>Comments (Not sent to requestors)</&></label><br/>
 % }
 % if ($CanRespond) {
-<input onClick="document.getElementById('replybox').style.background = '#fcc';" type=radio id="ReplyUpdate" name="UpdateType" value="response" <%$ARGS{'UpdateType'} eq "response" ? "CHECKED" : !$ARGS{'UpdateType'}&&$ResponseDefault%>><label for="ReplyUpdate"><&|/l&>Reply to requestors</&></label><br/>
+<input onClick="document.getElementById('replybox').style.background = '#fcc'; ahah('/Plugin/AjaxyReplyPage/ShowRecipients?TicketId=<%$TicketObj->id%>&UpdateType=response', 'recipients');" type=radio id="ReplyUpdate" name="UpdateType" value="response" <%$ARGS{'UpdateType'} eq "response" ? "CHECKED" : !$ARGS{'UpdateType'}&&$ResponseDefault%>><label for="ReplyUpdate"><&|/l&>Reply to requestors</&></label><br/>
 % }
 </td>
 <%init>

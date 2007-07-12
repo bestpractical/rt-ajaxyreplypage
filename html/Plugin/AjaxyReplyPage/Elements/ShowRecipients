@@ -2,22 +2,6 @@
 $TicketObj
 </%ARGS>
 <%init>
-my $arg = 'Ticket-'.$TicketObj->Id.'-SquelchMailTo';
-my @squelchto = ref($ARGS{$arg}) eq 'ARRAY' ? @{$ARGS{$arg}} : ($ARGS{$arg});
-
-foreach my $address (@squelchto) {
-        $TicketObj->SquelchMailTo($address) if ($address);
-}
-
-
-$arg = 'Ticket-'.$TicketObj->Id.'-UnsquelchMailTo';
-my @unsquelchto = ref($ARGS{$arg}) eq 'ARRAY' ? @{$ARGS{$arg}} : ($ARGS{$arg});
-
-foreach my $address (@unsquelchto) {
-        $TicketObj->UnsquelchMailTo($address) if ($address);
-}
-
-
 my $action;
 
 if (( $ARGS{'UpdateType'} eq 'response' ) || ($ARGS{'Action'} eq 'Respond' )) {
@@ -31,7 +15,7 @@ my $Message = MakeMIMEEntity(
     Subject => $ARGS{'UpdateSubject'},
     Body    => $ARGS{'UpdateContent'},
 );
-
+warn "my action is $action";
 my ( $Transaction, $Description, $Object ) = $TicketObj->$action(
     CcMessageTo  => $ARGS{'UpdateCc'},
     BccMessageTo => $ARGS{'UpdateBcc'},
@@ -47,8 +31,9 @@ unless ( $Transaction ) {
 my @non_recipients = $TicketObj->SquelchMailTo;
 </%init>
 <tr>
-<td>Recipients</td>
+<td>Recipient<br/>Blacklist</td>
 <td>
+<input type="hidden" name="DoSquelch" value="1" />
 <ul>
 % if ( $Object ) {
 <i><&|/l&>(Check boxes to disable notifications to the listed recipients)</&></i><br />
@@ -67,4 +52,6 @@ my @non_recipients = $TicketObj->SquelchMailTo;
 <% $recipient->Content %>
 % }
 </ul>
+<input type=submit value="Save changes to blacklist"/>
 </td>
+</tr>

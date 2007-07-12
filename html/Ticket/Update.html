@@ -62,7 +62,7 @@
     <& /Plugin/AjaxyReplyPage/Elements/Basics, %ARGS, TicketObj => $TicketObj &>
     <tr>
         <td>
-            <& /Plugin/AjaxyReplyPage/Elements/CustomFieldsWrapper, TicketObj => $TicketObj  &>
+            <& /Plugin/AjaxyReplyPage/Elements/CustomFieldsWrapper, TicketObj => $TicketObj, Queue=> $ARGS{'Queue'}  &>
 
         </td>
     </tr>
@@ -71,7 +71,9 @@
 <table style="border: 1px solid blue; background: <% ($ARGS{'UpdateType'} eq "response" || $Action eq 'Respond') ? '#fcc' :  '#eeeeee;'|n%> " id="replybox">
 <& /Plugin/AjaxyReplyPage/Elements/UpdateType, %ARGS, TicketObj => $TicketObj &>
 <tr><td><&|/l&>Subject</&> </td> <td> <input name="UpdateSubject" size="60" value="<% $ARGS{UpdateSubject} || $TicketObj->Subject()%>" /> </td> </tr>
-<& /Plugin/AjaxyReplyPage/Elements/ShowRecipients, %ARGS, TicketObj => $TicketObj &>
+<tbody id="recipients">
+    <& /Plugin/AjaxyReplyPage/Elements/ShowRecipients, %ARGS, TicketObj => $TicketObj &>
+</tbody>
 <tr>
         <td>
             <&|/l&>Cc</&>
@@ -150,6 +152,23 @@ my $title;
 
 my $TicketObj = LoadTicket($id);
 
+
+my $arg = 'Ticket-'.$TicketObj->Id.'-SquelchMailTo';
+my @squelchto = ref($ARGS{$arg}) eq 'ARRAY' ? @{$ARGS{$arg}} : ($ARGS{$arg});
+
+if ($ARGS{'DoSquelch'}) {
+my %new_squelch = map {$_ => 1 } @squelchto;
+my %old_squelch  = map {$_->Content => 1}  $TicketObj->SquelchMailTo;
+foreach my $address (keys %new_squelch) {
+warn "$address to squelch";
+        warn $TicketObj->SquelchMailTo($address) if ($address and not $old_squelch{$address});
+}
+
+foreach my $address (keys %old_squelch) {
+warn "$address to unsquelch";
+        $TicketObj->UnsquelchMailTo($address) if ($address and not $new_squelch{$address});
+}
+}
 
 
     $title = loc("Update ticket #[_1] ([_2])", $TicketObj->id, $TicketObj->Subject);

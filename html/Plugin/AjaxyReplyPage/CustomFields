@@ -1,3 +1,2 @@
 <& Elements/CustomFields, %ARGS &>
-<%time()%>
 %$m->abort();

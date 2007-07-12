@@ -1,0 +1,9 @@
+<& Elements/ShowRecipients, TicketObj => $TicketObj, UpdateType => $UpdateType &>
+% $m->abort();
+<%init>
+my $TicketObj = LoadTicket($TicketId);
+</%init>
+<%args>
+$TicketId => undef
+$UpdateType => undef
+</%args>
