@@ -1,4 +1,8 @@
-<& Elements/ShowRecipients, TicketObj => $TicketObj, UpdateType => $UpdateType &>
+% if ($UpdateType eq 'private') {
+<tr><td>Requestors</td><td><i>Requestors do not receive mail about comments</i></td></tr>
+% } else {
+<& Elements/ShowRecipients, %ARGS, TicketObj => $TicketObj, UpdateType => $UpdateType &>
+% }
 % $m->abort();
 <%init>
 my $TicketObj = LoadTicket($TicketId);

@@ -152,23 +152,19 @@ my $title;
 
 my $TicketObj = LoadTicket($id);
 
-
-my $arg = 'Ticket-'.$TicketObj->Id.'-SquelchMailTo';
-my @squelchto = ref($ARGS{$arg}) eq 'ARRAY' ? @{$ARGS{$arg}} : ($ARGS{$arg});
-
 if ($ARGS{'DoSquelch'}) {
-my %new_squelch = map {$_ => 1 } @squelchto;
-my %old_squelch  = map {$_->Content => 1}  $TicketObj->SquelchMailTo;
-foreach my $address (keys %new_squelch) {
-warn "$address to squelch";
-        warn $TicketObj->SquelchMailTo($address) if ($address and not $old_squelch{$address});
+my %SendTo = map { $_ => 1 } @SendTo;
+my @recipients = split(/\s*,\s*/,$TicketObj->RequestorAddresses);
+foreach my $recipient (@recipients) {
+    if ($SendTo{$recipient}) {
+        $TicketObj->UnsquelchMailTo($recipient);
+        } else {
+
+        $TicketObj->SquelchMailTo($recipient);
+        }
+}
 }
 
-foreach my $address (keys %old_squelch) {
-warn "$address to unsquelch";
-        $TicketObj->UnsquelchMailTo($address) if ($address and not $new_squelch{$address});
-}
-}
 
 
     $title = loc("Update ticket #[_1] ([_2])", $TicketObj->id, $TicketObj->Subject);
@@ -210,5 +206,6 @@ if ( exists $ARGS{SubmitTicket} ) {
 <%ARGS>
 $id => undef
 $Action => undef
+@SendTo => undef
 $DefaultStatus => undef
 </%ARGS>
