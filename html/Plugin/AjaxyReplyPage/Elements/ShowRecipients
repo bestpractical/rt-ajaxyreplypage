@@ -29,20 +29,17 @@ else {
 my @non_recipients = $TicketObj->SquelchMailTo;
 </%init>
 <tr>
-<td>Requestors</td>
+<td>To</td>
 <td>
 <input type="hidden" name="DoSquelch" value="1" />
-<ul>
-<i><&|/l&>(Unheck boxes to disable notifications to the listed recipients)</&></i><br />
 % my @recipients;
 % my @nonrecipients = map {$_->Content} $TicketObj->SquelchMailTo;
 % my %nonrecipients = map { $_ => 1} @nonrecipients;
 % my %requestors = map { $_ => 1} split(/\s*,\s*/, $TicketObj->RequestorAddresses);
 
 % foreach my $requestor (keys %requestors) {
-<li><input type="checkbox" class="checkbox" name="SendTo" value="<%$requestor%>" <%$nonrecipients{$requestor} ? '' : 'checked' %> /> <%$requestor%></li>
+<input type="checkbox" class="checkbox" name="SendTo" value="<%$requestor%>" <%$nonrecipients{$requestor} ? '' : 'checked' %> /> <%$requestor%><br/>
 % }
-</ul>
 <div align="right"><input type="submit" name="UpdateSquelch" value="Save changes to blacklist"></div>
 </td>
 </tr>

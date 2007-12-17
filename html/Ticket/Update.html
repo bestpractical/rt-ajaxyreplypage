@@ -69,8 +69,11 @@
 </table>
 <h2>Add history entry</h2>
 <table style="border: 1px solid blue; background: <% ($ARGS{'UpdateType'} eq "response" || $Action eq 'Respond') ? '#fcc' :  '#eeeeee;'|n%> " id="replybox">
+    <tr>
+        <td>
+            <table>
 <& /Plugin/AjaxyReplyPage/Elements/UpdateType, %ARGS, TicketObj => $TicketObj &>
-<tr><td><&|/l&>Subject</&> </td> <td> <input name="UpdateSubject" size="60" value="<% $ARGS{UpdateSubject} || $TicketObj->Subject()%>" /> </td> </tr>
+<tr><td><&|/l&>Subject</&> </td> <td> <input name="UpdateSubject" size="40" value="<% $ARGS{UpdateSubject} || $TicketObj->Subject()%>" /> </td> </tr>
 <tbody id="recipients">
     <& /Plugin/AjaxyReplyPage/Elements/ShowRecipients, %ARGS, TicketObj => $TicketObj &>
 </tbody>
@@ -79,14 +82,14 @@
             <&|/l&>Cc</&>
         </td>
         <td>
-            <input name="UpdateCc" size="60" value="<%$ARGS{UpdateCc}||""%>" />
+            <input name="UpdateCc" size="40" value="<%$ARGS{UpdateCc}||""%>" />
         </td>
     </tr>
 <tr>
     <td>
         <&|/l&>Bcc</&>
     </td>
-    <td><input name="UpdateBcc" size="60" value="<%$ARGS{UpdateBcc}||""%>" />
+    <td><input name="UpdateBcc" size="40" value="<%$ARGS{UpdateBcc}||""%>" />
 </td>
 </tr>
 % if (my $TxnCFs = $TicketObj->TransactionCustomFields) {
@@ -126,10 +129,10 @@
 </tr>
 
 % } # end of if
-
-<tr>
+</table>
+</td>
+<td>
 <& /Elements/Callback, _CallbackName => 'BeforeMessageBox', %ARGS &>
-<td colspan=2>
 % if (exists $ARGS{UpdateContent}) {
 % # preserve QuoteTransaction so we can use it to set up sane references/in/reply to
 % my $temp = $ARGS{'QuoteTransaction'};
