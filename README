@@ -1,0 +1,6 @@
+To install:
+
+    perl Makefile.PL
+    make install
+
+then add 'RT::AjaxyReplyPage' to @Plugins in RT_SiteConfig.pm
