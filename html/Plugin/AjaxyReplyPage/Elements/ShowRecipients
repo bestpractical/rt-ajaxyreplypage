@@ -1,4 +1,7 @@
 <%ARGS>
+$Action => ''
+$UpdateType => ''
+$UpdateSquelch => ''
 $TicketObj
 @SendTo => undef
 </%ARGS>
@@ -6,7 +9,7 @@ $TicketObj
 my $action;
 
 
-if ($ARGS{'UpdateSquelch'}) {
+if ($UpdateSquelch) {
 my %SendTo = map { $_ => 1 } @SendTo;
 my @recipients = split(/\s*,\s*/,$TicketObj->RequestorAddresses);
 foreach my $recipient (@recipients) {
@@ -19,7 +22,7 @@ foreach my $recipient (@recipients) {
 }
 
 
-if (( $ARGS{'UpdateType'} eq 'response' ) || ($ARGS{'Action'} eq 'Respond' )) {
+if (( $UpdateType eq 'response' ) || ($Action eq 'Respond' )) {
     $action = 'Correspond';
 }
 else {
@@ -28,8 +31,10 @@ else {
 
 my @non_recipients = $TicketObj->SquelchMailTo;
 </%init>
+<tr><td colspan="2"><hr/></td></tr>
+</tr>
 <tr>
-<td>To</td>
+<td class="label">To</td>
 <td>
 <input type="hidden" name="DoSquelch" value="1" />
 % my @recipients;
@@ -43,3 +48,4 @@ my @non_recipients = $TicketObj->SquelchMailTo;
 <div align="right"><input type="submit" name="UpdateSquelch" value="Save changes to blacklist"></div>
 </td>
 </tr>
+<tr><td colspan="2"><hr/></td></tr>

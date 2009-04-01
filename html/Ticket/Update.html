@@ -53,12 +53,12 @@
 <form action="Update.html" name="TicketUpdate" 
     method="post" enctype="multipart/form-data">
 <& /Elements/Callback, _CallbackName => 'FormStart',ARGSRef =>\%ARGS &>
-<input type="hidden" class="hidden" name="QuoteTransaction" value="<% $ARGS{QuoteTransaction} %>" />
+<input type="hidden" class="hidden" name="QuoteTransaction" value="<% $ARGS{QuoteTransaction}||'' %>" />
 <input type="hidden" class="hidden" name="DefaultStatus" value="<% $DefaultStatus %>" />
 <input type="hidden" class="hidden" name="Action" value="<% $ARGS{Action} %>" />
 <input type="hidden" class="hidden" name="id" value="<%$TicketObj->Id%>" /><br />
-<h2>Change ticket properties</h2>
-<table style="border: 1px solid blue; background: #eeeeee;">
+<center>
+<table style="background: #eeeeee; padding: 1em; -moz-border-radius: 0.5em; -webkit-border-radius: 0.5em;">
     <& /Plugin/AjaxyReplyPage/Elements/Basics, %ARGS, TicketObj => $TicketObj &>
     <tr>
         <td>
@@ -67,18 +67,17 @@
         </td>
     </tr>
 </table>
-<h2>Add history entry</h2>
-<table style="border: 1px solid blue; background: <% ($ARGS{'UpdateType'} eq "response" || $Action eq 'Respond') ? '#fcc' :  '#eeeeee;'|n%> " id="replybox">
+</center>
+<br />
+<table style="background: <% ($UpdateType eq "response" || $Action eq 'Respond') ? '#fcc;' :  '#eeeeee;'|n%> padding: 1em; -moz-border-radius: 0.5em; -webkit-border-radius: 0.5em;" id="replybox" width="100%">
     <tr>
-        <td>
+        <td style="width: 16em; padding-left: 1em;" valign="top">
             <table>
-<& /Plugin/AjaxyReplyPage/Elements/UpdateType, %ARGS, TicketObj => $TicketObj &>
-<tr><td><&|/l&>Subject</&> </td> <td> <input name="UpdateSubject" size="40" value="<% $ARGS{UpdateSubject} || $TicketObj->Subject()%>" /> </td> </tr>
-<tbody id="recipients">
-    <& /Plugin/AjaxyReplyPage/Elements/ShowRecipients, %ARGS, TicketObj => $TicketObj &>
-</tbody>
+                <& /Plugin/AjaxyReplyPage/Elements/UpdateType, %ARGS, TicketObj => $TicketObj &>
+                <tr><td colspan=2><hr/></td></tr>
+<tr><td class="label"><&|/l&>Subject</&> </td> <td> <input name="UpdateSubject" size="40" value="<% $ARGS{UpdateSubject} || $TicketObj->Subject()%>" /> </td> </tr>
 <tr>
-        <td>
+        <td class="label">
             <&|/l&>Cc</&>
         </td>
         <td>
@@ -86,7 +85,7 @@
         </td>
     </tr>
 <tr>
-    <td>
+    <td class="label">
         <&|/l&>Bcc</&>
     </td>
     <td><input name="UpdateBcc" size="40" value="<%$ARGS{UpdateBcc}||""%>" />
@@ -95,7 +94,7 @@
 % if (my $TxnCFs = $TicketObj->TransactionCustomFields) {
 %    while (my $CF = $TxnCFs->Next()) {
 <tr>
-<td><% $CF->Name %>:</td>
+<td class="label"><% $CF->Name %>:</td>
 <td>
 <& /Elements/EditCustomField, CustomField => $CF, NamePrefix => "Object-RT::Transaction--CustomField-" &><em><% $CF->FriendlyType %></em>
 </td>
@@ -104,7 +103,7 @@
 % } # end of if
 
 <tr>
-    <td>
+    <td class="label">
         <&|/l&>Attach</&>
     </td>
     <td>
@@ -114,7 +113,7 @@
 % if (exists $session{'Attachments'}) {
 
 <tr>
-    <td>
+    <td class="label">
         <&|/l&>Attached file</&>
     </td>
 
@@ -129,10 +128,19 @@
 </tr>
 
 % } # end of if
+<tbody id="recipients">
+    <& /Plugin/AjaxyReplyPage/Elements/ShowRecipients, %ARGS, TicketObj => $TicketObj &>
+</tbody>
+<tr>
+
 </table>
 </td>
-<td>
-<& /Elements/Callback, _CallbackName => 'BeforeMessageBox', %ARGS &>
+<td valign="top" style="width: auto; padding-left: 1em;">
+    <& /Elements/Callback, _CallbackName => 'BeforeMessageBox', %ARGS &>
+% if ( $gnupg_widget ) {
+<& /Elements/GnuPG/SignEncryptWidget, self => $gnupg_widget, TicketObj => $TicketObj, &>
+% }
+
 % if (exists $ARGS{UpdateContent}) {
 % # preserve QuoteTransaction so we can use it to set up sane references/in/reply to
 % my $temp = $ARGS{'QuoteTransaction'};
@@ -143,15 +151,16 @@
 <& /Elements/MessageBox, Name=>"UpdateContent", %ARGS &>
 % }
 
+<& /Elements/Submit, Label => loc('Update Ticket'), Name => 'SubmitTicket' &>
 </td>
 </tr>
 
 
 </table>
-<& /Elements/Submit, Label => loc('Update Ticket'), Name => 'SubmitTicket' &>
 </form>
 <%INIT>
 my $title;
+my $checks_failure = 0;
 
 my $TicketObj = LoadTicket($id);
 
@@ -199,9 +208,22 @@ unless (keys %{$session{'Attachments'}} and $ARGS{'UpdateAttach'}) {
     delete $session{'Attachments'};
 }
 
-if ( exists $ARGS{SubmitTicket} ) {
-    $m->comp('Display.html', TicketObj => $TicketObj, %ARGS);
-    return;
+my $gnupg_widget = $m->comp('/Elements/GnuPG/SignEncryptWidget:new', Arguments => \%ARGS );
+$m->comp( '/Elements/GnuPG/SignEncryptWidget:Process',
+    self => $gnupg_widget,
+    TicketObj => $TicketObj,
+);
+if ( $ARGS{'SubmitTicket'} ) {
+    my $status = $m->comp('/Elements/GnuPG/SignEncryptWidget:Check',
+        self      => $gnupg_widget,
+        TicketObj => $TicketObj,
+    );
+    $checks_failure = 1 unless $status;
+}
+
+if ( !$checks_failure && exists $ARGS{SubmitTicket} ) {
+    $m->callback( Ticket => $TicketObj, ARGSRef => \%ARGS, CallbackName => 'BeforeDisplay' );
+    return $m->comp('Display.html', TicketObj => $TicketObj, %ARGS);
 }
 
 </%INIT>
@@ -210,5 +232,6 @@ if ( exists $ARGS{SubmitTicket} ) {
 $id => undef
 $Action => undef
 @SendTo => undef
-$DefaultStatus => undef
+$DefaultStatus => ''
+$UpdateType => ''
 </%ARGS>
