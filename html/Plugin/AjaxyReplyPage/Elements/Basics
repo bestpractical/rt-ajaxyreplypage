@@ -1,10 +1,12 @@
 <%args>
 $TicketObj
+$DefaultStatus
 </%args>
 <%init>
-    my $DefaultStatus||=($ARGS{'Status'} ||$TicketObj->Status());
 
-        $DefaultStatus='open' if ($DefaultStatus eq 'new');
+$DefaultStatus||=($ARGS{'Status'} ||$TicketObj->Status());
+$DefaultStatus='open' if ($DefaultStatus eq 'new');
+
 </%init>
 
 <tr>
