@@ -1,6 +1,6 @@
 <%args>
 $TicketObj
-$DefaultStatus
+$DefaultStatus => undef
 </%args>
 <%init>
 
