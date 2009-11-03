@@ -3,9 +3,10 @@ $TicketObj
 $ARGSRef
 </%args>
 <%init>
+return if $ARGSRef->{id} eq 'new';
 return unless $TicketObj;
-$TicketObj = $$TicketObj;
-return unless  ($TicketObj and $TicketObj->id);
-ProcessObjectCustomFieldUpdates(Object => $TicketObj, ARGSRef => $ARGSRef);
+my $t = $$TicketObj;
+return unless  ($t and $t->id);
+ProcessObjectCustomFieldUpdates(Object => $t, ARGSRef => $ARGSRef);
 </%init>
 
